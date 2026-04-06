@@ -2,6 +2,7 @@ package com.pe.prueba_facturacion.service;
 
 import com.pe.prueba_facturacion.dto.venta.CrearVentaDTO;
 import com.pe.prueba_facturacion.dto.venta.DetalleVentaDTO;
+import com.pe.prueba_facturacion.dto.venta.VentaListadoDTO;
 import com.pe.prueba_facturacion.dto.venta.VentaResponseDTO;
 import com.pe.prueba_facturacion.model.*;
 import com.pe.prueba_facturacion.repository.ComprobanteElectronicoRepository;
@@ -131,5 +132,18 @@ public class VentaService {
             BigDecimal mtoBaseIgv,
             BigDecimal igv,
             BigDecimal subtotal) {}
+
+    @Transactional(readOnly = true)
+    public List<VentaListadoDTO> listarVentas() {
+        return ventaRepository.findAll().stream()
+                .map(venta -> {
+                    ComprobanteElectronico comp = comprobanteRepository
+                            .findByVenta(venta)
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "Venta " + venta.getId() + " sin comprobante asociado"));
+                    return new VentaListadoDTO(venta, comp);
+                })
+                .toList();
+    }
 
 }
